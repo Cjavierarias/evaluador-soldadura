@@ -10,8 +10,8 @@
 // CONFIGURACIÓN DE LA APLICACIÓN
 // ============================================
 // CONFIGURADO CON LOS FORMULARIOS DEL USUARIO
-// Formulario Registro: 1X2w7hp3EICBELfSwSzZT4TGzvGJQNjt-Jj4-Fzaiyy4
-// Formulario Evaluación: 1QQIcwmF6HBnCtgWIN8xRxvHNEQ_cJdsVT3DG8BdTaqw
+// Formulario Registro: 1FAIpQLSf0GoRVVKUiLLt_Ku8-labwOCanmxMzhYCM1VF88Qu6srR5ZQ
+// Formulario Evaluación: 1FAIpQLSfwLfjqDQWPK01eip2Gkqdz21VYhThEJm1Rts2yHXyufUB7mg
 // ============================================
 
 const CONFIG = {
@@ -37,7 +37,7 @@ const CONFIG = {
     googleForms: {
         register: {
             // URL del formulario de registro de participantes
-            url: 'https://docs.google.com/forms/d/e/1X2w7hp3EICBELfSwSzZT4TGzvGJQNjt-Jj4-Fzaiyy4/formResponse',
+            url: 'https://docs.google.com/forms/d/e/1FAIpQLSf0GoRVVKUiLLt_Ku8-labwOCanmxMzhYCM1VF88Qu6srR5ZQ/formResponse',
             entries: {
                 name: 'entry.1070934200',         // Nombre completo
                 position: 'entry.1103188513',     // Cargo/posición
@@ -48,7 +48,7 @@ const CONFIG = {
         },
         evaluation: {
             // URL del formulario de registro de evaluaciones
-            url: 'https://docs.google.com/forms/d/e/1QQIcwmF6HBnCtgWIN8xRxvHNEQ_cJdsVT3DG8BdTaqw/formResponse',
+            url: 'https://docs.google.com/forms/d/e/1FAIpQLSfwLfjqDQWPK01eip2Gkqdz21VYhThEJm1Rts2yHXyufUB7mg/formResponse',
             entries: {
                 sessionId: 'entry.67394734',         // ID de sesión
                 name: 'entry.2002126249',            // Nombre del participante
@@ -586,9 +586,15 @@ const WeldingEvaluator = {
 // ============================================
 // INTEGRACIÓN CON GOOGLE FORMS
 // ============================================
+// Nota: Google Forms tiene restricciones para envíos directos desde apps web.
+// Implementamos múltiples métodos de envío:
+// 1. fetch con no-cors (silencioso, sin confirmación)
+// 2. Abrir formulario pre-rellenado en nueva pestaña (más confiable)
+// ============================================
 
 const GoogleFormsIntegration = {
-    async submitRegisterForm() {
+    // Método 1: Envío directo (silencioso, puede fallar por CORS)
+    async submitRegisterFormDirect() {
         const data = AppState.participant;
         const formData = new FormData();
         
@@ -604,16 +610,43 @@ const GoogleFormsIntegration = {
                 body: formData,
                 mode: 'no-cors'
             });
-            showToast('Datos guardados correctamente', 'success');
             return true;
         } catch (error) {
-            console.error('Error guardando registro:', error);
-            showToast('Error al guardar datos', 'error');
+            console.error('Error envío directo:', error);
             return false;
         }
     },
-
-    async submitEvaluationForm(results) {
+    
+    // Método 2: Abrir formulario pre-rellenado (más confiable)
+    submitRegisterFormPopup() {
+        const data = AppState.participant;
+        const baseUrl = CONFIG.googleForms.register.url.replace('/formResponse', '/viewform');
+        const params = new URLSearchParams();
+        
+        params.append(CONFIG.googleForms.register.entries.name, data.name);
+        params.append(CONFIG.googleForms.register.entries.position, data.position);
+        params.append(CONFIG.googleForms.register.entries.phone, data.phone);
+        params.append(CONFIG.googleForms.register.entries.email, data.email);
+        if (data.company) {
+            params.append(CONFIG.googleForms.register.entries.company, data.company);
+        }
+        
+        const fullUrl = `${baseUrl}?${params.toString()}`;
+        window.open(fullUrl, '_blank');
+    },
+    
+    async submitRegisterForm() {
+        // Primero intentar envío directo
+        const success = await this.submitRegisterFormDirect();
+        if (!success) {
+            // Si falla, abrir formulario en popup
+            showToast('Abriendo formulario de registro...', 'info');
+            this.submitRegisterFormPopup();
+        }
+    },
+    
+    // Método 1: Envío directo de evaluación
+    async submitEvaluationFormDirect(results) {
         const formData = new FormData();
         
         formData.append(CONFIG.googleForms.evaluation.entries.sessionId, results.sessionId);
@@ -640,12 +673,47 @@ const GoogleFormsIntegration = {
                 body: formData,
                 mode: 'no-cors'
             });
-            showToast('Evaluación guardada correctamente', 'success');
             return true;
         } catch (error) {
-            console.error('Error guardando evaluación:', error);
-            showToast('Error al guardar evaluación', 'error');
+            console.error('Error envío directo evaluación:', error);
             return false;
+        }
+    },
+    
+    // Método 2: Abrir formulario de evaluación pre-rellenado
+    submitEvaluationFormPopup(results) {
+        const baseUrl = CONFIG.googleForms.evaluation.url.replace('/formResponse', '/viewform');
+        const params = new URLSearchParams();
+        
+        params.append(CONFIG.googleForms.evaluation.entries.sessionId, results.sessionId);
+        params.append(CONFIG.googleForms.evaluation.entries.name, results.participant.name);
+        params.append(CONFIG.googleForms.evaluation.entries.distanceAvg, results.distance.average);
+        params.append(CONFIG.googleForms.evaluation.entries.distanceMin, results.distance.min);
+        params.append(CONFIG.googleForms.evaluation.entries.distanceMax, results.distance.max);
+        params.append(CONFIG.googleForms.evaluation.entries.angleAvg, results.angle.average);
+        params.append(CONFIG.googleForms.evaluation.entries.angleMin, results.angle.min);
+        params.append(CONFIG.googleForms.evaluation.entries.angleMax, results.angle.max);
+        params.append(CONFIG.googleForms.evaluation.entries.velocityAvg, results.velocity.average);
+        params.append(CONFIG.googleForms.evaluation.entries.velocityMin, results.velocity.min);
+        params.append(CONFIG.googleForms.evaluation.entries.velocityMax, results.velocity.max);
+        params.append(CONFIG.googleForms.evaluation.entries.timeTotal, results.evaluationTime);
+        params.append(CONFIG.googleForms.evaluation.entries.distanceOk, results.distance.ok ? 'Sí' : 'No');
+        params.append(CONFIG.googleForms.evaluation.entries.angleOk, results.angle.ok ? 'Sí' : 'No');
+        params.append(CONFIG.googleForms.evaluation.entries.velocityOk, results.velocity.ok ? 'Sí' : 'No');
+        params.append(CONFIG.googleForms.evaluation.entries.finalGrade, results.grade);
+        params.append(CONFIG.googleForms.evaluation.entries.score, results.score);
+        
+        const fullUrl = `${baseUrl}?${params.toString()}`;
+        window.open(fullUrl, '_blank');
+    },
+    
+    async submitEvaluationForm(results) {
+        // Primero intentar envío directo
+        const success = await this.submitEvaluationFormDirect(results);
+        if (!success) {
+            // Si falla, abrir formulario en popup
+            showToast('Abriendo formulario de evaluación...', 'info');
+            this.submitEvaluationFormPopup(results);
         }
     }
 };
