@@ -52,6 +52,8 @@ const CONFIG = {
             entries: {
                 sessionId: 'entry.67394734',         // ID de sesión
                 name: 'entry.2002126249',            // Nombre del participante
+                date: 'entry.1434018365',            // Fecha
+                time: 'entry.629019864',             // Hora
                 distanceAvg: 'entry.581057479',      // Distancia promedio (cm)
                 distanceMin: 'entry.28421193',       // Distancia mínima (cm)
                 distanceMax: 'entry.1158390019',     // Distancia máxima (cm)
@@ -649,8 +651,15 @@ const GoogleFormsIntegration = {
     async submitEvaluationFormDirect(results) {
         const formData = new FormData();
         
+        // Obtener fecha y hora actual
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+        const timeStr = now.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+        
         formData.append(CONFIG.googleForms.evaluation.entries.sessionId, results.sessionId);
         formData.append(CONFIG.googleForms.evaluation.entries.name, results.participant.name);
+        formData.append(CONFIG.googleForms.evaluation.entries.date, dateStr);
+        formData.append(CONFIG.googleForms.evaluation.entries.time, timeStr);
         formData.append(CONFIG.googleForms.evaluation.entries.distanceAvg, results.distance.average);
         formData.append(CONFIG.googleForms.evaluation.entries.distanceMin, results.distance.min);
         formData.append(CONFIG.googleForms.evaluation.entries.distanceMax, results.distance.max);
@@ -685,8 +694,15 @@ const GoogleFormsIntegration = {
         const baseUrl = CONFIG.googleForms.evaluation.url.replace('/formResponse', '/viewform');
         const params = new URLSearchParams();
         
+        // Obtener fecha y hora actual
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+        const timeStr = now.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+        
         params.append(CONFIG.googleForms.evaluation.entries.sessionId, results.sessionId);
         params.append(CONFIG.googleForms.evaluation.entries.name, results.participant.name);
+        params.append(CONFIG.googleForms.evaluation.entries.date, dateStr);
+        params.append(CONFIG.googleForms.evaluation.entries.time, timeStr);
         params.append(CONFIG.googleForms.evaluation.entries.distanceAvg, results.distance.average);
         params.append(CONFIG.googleForms.evaluation.entries.distanceMin, results.distance.min);
         params.append(CONFIG.googleForms.evaluation.entries.distanceMax, results.distance.max);
