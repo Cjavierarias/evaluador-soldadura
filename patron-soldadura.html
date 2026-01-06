@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patrón de Soldadura - Para Imprimir</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .no-print {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .no-print h1 {
+            margin-bottom: 15px;
+        }
+        
+        .print-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        
+        .print-btn:hover {
+            background: #e55a2b;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .instructions h2 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .pattern-container {
+            background: white;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .pattern-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .pattern-header h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .pattern-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .pattern-area {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            border: 3px solid #2c3e50;
+            background: #fafafa;
+            margin-bottom: 20px;
+        }
+        
+        .guide-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+        
+        .guide-line {
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                #3498db 5%, 
+                #3498db 95%, 
+                transparent 100%);
+        }
+        
+        .center-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #ff6b35;
+            transform: translateY(-50%);
+        }
+        
+        .start-zone {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #27ae60;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .end-zone {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e74c3c;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .distance-markers {
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .distance-markers span {
+            display: block;
+            margin: 50px 0;
+        }
+        
+        .info-box {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+        }
+        
+        .info-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .info-item strong {
+            display: block;
+            color: #2c3e50;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .info-item span {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        
+        @media print {
+            .no-print {
+                display: none;
+            }
+            
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .pattern-container {
+                box-shadow: none;
+                padding: 20px;
+            }
+            
+            .instructions {
+                display: none;
+            }
+        }
+        
+        /* Zona óptima marcada */
+        .optimal-zone {
+            position: absolute;
+            top: 25%;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            border: 2px dashed #27ae60;
+            background: rgba(39, 174, 96, 0.05);
+        }
+        
+        .optimal-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Panel de control (no se imprime) -->
+    <div class="no-print">
+        <h1>🖨️ Imprimir Patrón de Soldadura</h1>
+        <p>Este patrón está diseñado para ser impreso y utilizado durante las evaluaciones de destreza en soldadura.</p>
+        <br>
+        <button class="print-btn" onclick="window.print()">🖨️ IMPRIMIR PATRÓN</button>
+        <br><br>
+        <a href="index.html" style="color: white;">← Volver a la aplicación</a>
+    </div>
+    
+    <!-- Instrucciones -->
+    <div class="instructions no-print">
+        <h2>📋 Instrucciones de Uso</h2>
+        <ul>
+            <li><strong>Imprime este patrón</strong> en tamaño carta o A4 sin reducir el tamaño.</li>
+            <li><strong>Coloca el celular</strong> sobre el patrón de manera que la cámara apunte hacia las líneas.</li>
+            <li><strong>Durante la evaluación</strong>, el participante debe mantener el celular a una distancia de 10-15 cm del patrón.</li>
+            <li><strong>El ángulo ideal</strong> es de 45° respecto al patrón (como si sostuviera un electrodo).</li>
+            <li><strong>La velocidad</strong> de desplazamiento debe ser constante, entre 2-8 cm/s.</li>
+            <li><strong>Las líneas azules</strong> son la guía que el participante debe seguir.</li>
+            <li><strong>La línea naranja central</strong> es la referencia visual.</li>
+        </ul>
+    </div>
+    
+    <!-- Patrón imprimible -->
+    <div class="pattern-container">
+        <div class="pattern-header">
+            <h2>🔧 Patrón de Evaluación de Soldadura</h2>
+            <p>Mantén el celular paralelo a este patrón durante toda la evaluación</p>
+        </div>
+        
+        <div class="pattern-area">
+            <!-- Zona óptima marcada -->
+            <div class="optimal-zone">
+                <div class="optimal-label">ZONA DE SOLDADURA<br>10-15 cm de distancia</div>
+            </div>
+            
+            <!-- Líneas guía -->
+            <div class="guide-lines">
+                <div class="guide-line"></div>
+                <div class="guide-line"></div>
+                <div class="guide-line"></div>
+                <div class="guide-line"></div>
+                <div class="guide-line"></div>
+            </div>
+            
+            <!-- Línea central -->
+            <div class="center-line"></div>
+            
+            <!-- Marcas de zona -->
+            <div class="start-zone">INICIO</div>
+            <div class="end-zone">FIN</div>
+        </div>
+        
+        <!-- Información de parámetros -->
+        <div class="info-box">
+            <div class="info-item">
+                <strong>📏 Distancia</strong>
+                <span>10 - 15 cm</span>
+            </div>
+            <div class="info-item">
+                <strong>📐 Ángulo</strong>
+                <span>45° (±15°)</span>
+            </div>
+            <div class="info-item">
+                <strong>⚡ Velocidad</strong>
+                <span>2 - 8 cm/s</span>
+            </div>
+            <div class="info-item">
+                <strong>⏱️ Tiempo</strong>
+                <span>30 segundos</span>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Evaluador de Soldadura - Aplicación Web</p>
+            <p>Generado automáticamente</p>
+        </div>
+    </div>
+</body>
+</html>
