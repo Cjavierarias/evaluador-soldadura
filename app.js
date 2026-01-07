@@ -26,6 +26,13 @@ const CONFIG = {
         evalTime: 30        // Tiempo de evaluación en segundos
     },
     
+    // Factor de calibración de velocidad
+    // AJUSTAR ESTE VALOR PARA CALIBRAR EL SENSOR:
+    // - Si la velocidad medida es muy BAJA, aumentar este valor (ej: 2, 3, 5...)
+    // - Si la velocidad medida es muy ALTA, disminuir este valor (ej: 0.5, 0.3...)
+    // Rango recomendado: 0.5 a 5.0
+    velocityCalibration: 1.0,
+    
     // Configuración de sensores
     sensors: {
         samplingRate: 50,   // ms entre muestras
@@ -398,20 +405,17 @@ const SensorManager = {
             movementAccel = 0;
         }
         
-        // Factores de conversión calibrados para movimientos lentos de soldadura
-        // Los acelerómetros de celulares típicamente tienen rangos de ±2g, ±4g, ±8g, ±16g
-        // Para ±2g, la sensibilidad es aproximadamente 16384 LSB/g
-        
         // Conversión de aceleración a velocidad:
         // v = a * t (integración simple para cortos periodos)
-        // Factor de calibración: ajusta según pruebas empiricas
-        
-        // Factor empirico basado en pruebas: multiplicar por 0.02 para obtener cm/s
-        // Esto compensa la sensibilidad del acelerómetro y el ruido
         const samplingInterval = CONFIG.sensors.samplingRate / 1000; // en segundos
         
-        // Velocidad estimada con factor de corrección para movimientos lentos
-        let velocity = movementAccel * samplingInterval * 2.5;
+        // Factor de calibración de velocidad ( configurable en CONFIG.velocityCalibration )
+        // Este factor ajusta la sensibilidad del sensor
+        // Valor por defecto: 2.5, ajustar según pruebas
+        const calibrationFactor = CONFIG.velocityCalibration || 2.5;
+        
+        // Velocidad estimada con factor de calibración
+        let velocity = movementAccel * samplingInterval * calibrationFactor;
         
         // Suavizar para evitar fluctuaciones grandes
         // Usar un promedio con el valor anterior si existe
