@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Evaluador de Soldadura - Destreza</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Pantalla de Bienvenida -->
+        <section id="welcome-screen" class="screen active">
+            <div class="logo-container">
+                <svg class="welding-icon" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#ff6b35" stroke-width="3"/>
+                    <path d="M30 70 L50 30 L70 70" fill="none" stroke="#ff6b35" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="50" cy="30" r="5" fill="#ff6b35"/>
+                    <line x1="50" y1="35" x2="50" y2="50" stroke="#ffd700" stroke-width="3"/>
+                </svg>
+            </div>
+            <h1>Evaluador de Soldadura</h1>
+            <p class="subtitle">Medición de Destreza</p>
+            <p class="description">Esta aplicación evalúa tu técnica de soldadura usando los sensores de tu celular.</p>
+            
+            <div class="requirements-card">
+                <h3>Requisitos:</h3>
+                <ul>
+                    <li>✓ Celular con giroscopio</li>
+                    <li>✓ Cámara funcional</li>
+                    <li>✓ Conexión a internet</li>
+                    <li>✓ Permisos de sensores activados</li>
+                </ul>
+            </div>
+            
+            <!-- Nuevos botones para modo rápido y calibración -->
+            <div class="welcome-buttons">
+                <button id="start-btn" class="btn-primary btn-large">
+                    🎯 Evaluación Completa
+                    <span class="btn-subtitle">Con registro de datos</span>
+                </button>
+                
+                <button id="quick-test-btn" class="btn-secondary btn-large">
+                    ⚡ Prueba Rápida
+                    <span class="btn-subtitle">Sin registro, solo práctica</span>
+                </button>
+                
+                <button id="settings-btn" class="btn-outline btn-large">
+                    ⚙️ Calibración
+                    <span class="btn-subtitle">Ajustar sensores</span>
+                </button>
+            </div>
+            
+            <div class="info-note">
+                <p>💡 Mantén tu celular paralelo al patrón de soldadura durante toda la evaluación.</p>
+            </div>
+        </section>
+
+        <!-- Pantalla de Registro -->
+        <section id="register-screen" class="screen">
+            <h2>Datos del Participante</h2>
+            
+            <form id="participant-form">
+                <div class="form-group">
+                    <label for="participant-name">Nombre completo *</label>
+                    <input type="text" id="participant-name" required placeholder="Ingresa tu nombre">
+                </div>
+                
+                <div class="form-group">
+                    <label for="participant-position">Cargo/Posición *</label>
+                    <input type="text" id="participant-position" required placeholder="Ej: Soldador, Aprendiz">
+                </div>
+                
+                <div class="form-group">
+                    <label for="participant-phone">Teléfono *</label>
+                    <input type="tel" id="participant-phone" required placeholder="Número de contacto">
+                </div>
+                
+                <div class="form-group">
+                    <label for="participant-email">Correo electrónico *</label>
+                    <input type="email" id="participant-email" required placeholder="tu@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="participant-company">Empresa (Opcional)</label>
+                    <input type="text" id="participant-company" placeholder="Nombre de la empresa">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="back-to-welcome" class="btn-secondary">Volver</button>
+                    <button type="submit" class="btn-primary">Continuar</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Pantalla de Configuración y Calibración -->
+        <section id="settings-screen" class="screen">
+            <h2>Calibración de Sensores</h2>
+            <p class="instructions">Ajusta los sensores para obtener mediciones más precisas.</p>
+            
+            <!-- Calibración de Ángulo -->
+            <div class="calibration-card">
+                <h3>📐 Calibración de Ángulo</h3>
+                <p class="calibration-desc">Establece la posición actual como ángulo de referencia (0°).</p>
+                
+                <div class="sensor-display">
+                    <span class="label">Ángulo actual:</span>
+                    <span id="cal-angle-ref" class="value">0°</span>
+                </div>
+                
+                <div class="calibration-actions">
+                    <button id="set-angle-zero" class="btn-secondary">Establecer como 0°</button>
+                </div>
+                
+                <p id="angle-cal-status" class="cal-status">No calibrado</p>
+            </div>
+            
+            <!-- Calibración de Distancia -->
+            <div class="calibration-card">
+                <h3>📏 Calibración de Distancia</h3>
+                <p class="calibration-desc">Establece la distancia actual como referencia.</p>
+                
+                <div class="sensor-display">
+                    <span class="label">Distancia actual:</span>
+                    <span id="cal-dist-ref" class="value">-- cm</span>
+                </div>
+                
+                <div class="calibration-actions">
+                    <button id="set-dist-zero" class="btn-secondary">Establecer referencia</button>
+                    <button id="reset-dist-zero" class="btn-outline">Restablecer</button>
+                </div>
+                
+                <p id="dist-cal-status" class="cal-status">No calibrado</p>
+            </div>
+            
+            <!-- Calibración de Velocidad -->
+            <div class="calibration-card">
+                <h3>⚡ Factor de Velocidad</h3>
+                <p class="calibration-desc">Ajusta la sensibilidad del sensor de velocidad.</p>
+                
+                <div class="slider-container">
+                    <label for="velocity-slider">Factor de calibración: <span id="velocity-factor-display">2.5</span></label>
+                    <input type="range" id="velocity-slider" min="0.5" max="10" step="0.5" value="2.5">
+                    <div class="slider-labels">
+                        <span>0.5x</span>
+                        <span>10x</span>
+                    </div>
+                </div>
+                
+                <p class="calibration-tip">💡 Si la velocidad medida es muy baja, aumenta este valor. Si es muy alta, Disminúyelo.</p>
+            </div>
+            
+            <!-- Información de sensores -->
+            <div class="sensor-info-card">
+                <h4>Estado de Sensores</h4>
+                <div class="sensor-status-grid">
+                    <div id="status-gyro" class="sensor-status-item">
+                        <span class="status-icon">❌</span>
+                        <span>Giroscopio</span>
+                    </div>
+                    <div id="status-accel" class="sensor-status-item">
+                        <span class="status-icon">❌</span>
+                        <span>Acelerómetro</span>
+                    </div>
+                    <div id="status-camera" class="sensor-status-item">
+                        <span class="status-icon">❌</span>
+                        <span>Cámara</span>
+                    </div>
+                </div>
+                <button id="test-sensors-btn" class="btn-secondary">Probar Sensores</button>
+            </div>
+            
+            <div class="form-actions">
+                <button id="back-from-settings" class="btn-primary">Guardar y Volver</button>
+            </div>
+        </section>
+
+        <!-- Pantalla de Calibración Rápida (antes de evaluación) -->
+        <section id="quick-cal-screen" class="screen">
+            <h2>Calibración Rápida</h2>
+            <p class="instructions">Posiciona tu celular en la posición ideal de soldadura para calibrar los sensores.</p>
+            
+            <div class="camera-preview">
+                <video id="quick-cal-video" autoplay playsinline></video>
+                <canvas id="quick-cal-canvas"></canvas>
+                <div class="overlay-guide">
+                    <div class="guide-line horizontal"></div>
+                    <div class="guide-line vertical"></div>
+                    <div class="distance-indicator">
+                        <span id="quick-cal-distance">--</span> cm
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sensor-readings">
+                <div class="sensor-card">
+                    <span class="sensor-label">Ángulo</span>
+                    <span id="quick-cal-angle" class="sensor-value">0°</span>
+                </div>
+                <div class="sensor-card">
+                    <span class="sensor-label">Distancia</span>
+                    <span id="quick-cal-distance-display" class="sensor-value">-- cm</span>
+                </div>
+            </div>
+            
+            <button id="quick-cal-btn" class="btn-primary" disabled>Comenzar Evaluación</button>
+            <p class="hint">Mantén el celular estable y paralelo al patrón</p>
+        </section>
+
+        <!-- Pantalla de Evaluación -->
+        <section id="evaluation-screen" class="screen">
+            <div class="eval-header">
+                <h2>Evaluación en Progreso</h2>
+                <div class="timer">
+                    <span id="eval-timer">00:00</span>
+                </div>
+            </div>
+            
+            <!-- Indicador de modo -->
+            <div id="eval-mode-indicator" class="eval-mode-badge">
+                Modo: Evaluación Completa
+            </div>
+            
+            <div class="eval-camera-preview">
+                <video id="eval-video" autoplay playsinline></video>
+                <canvas id="eval-canvas"></canvas>
+            </div>
+            
+            <div class="eval-sensors">
+                <div class="sensor-row">
+                    <div class="sensor-item">
+                        <span class="label">Distancia</span>
+                        <span id="eval-distance" class="value">-- cm</span>
+                        <span id="eval-distance-status" class="status"></span>
+                    </div>
+                    <div class="sensor-item">
+                        <span class="label">Ángulo</span>
+                        <span id="eval-angle" class="value">0°</span>
+                        <span id="eval-angle-status" class="status"></span>
+                    </div>
+                    <div class="sensor-item">
+                        <span class="label">Velocidad</span>
+                        <span id="eval-velocity" class="value">0 cm/s</span>
+                        <span id="eval-velocity-status" class="status"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="eval-progress">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <span id="progress-text">Tiempo restante: --</span>
+            </div>
+            
+            <button id="stop-eval-btn" class="btn-danger">Finalizar Evaluación</button>
+        </section>
+
+        <!-- Pantalla de Resultados -->
+        <section id="results-screen" class="screen">
+            <h2>Resultados de la Evaluación</h2>
+            
+            <div id="results-participant-info" class="participant-info">
+                <p><strong>Participante:</strong> <span id="result-name"></span></p>
+                <p><strong>Cargo:</strong> <span id="result-position"></span></p>
+            </div>
+            
+            <div class="results-summary">
+                <div class="result-card" id="overall-result">
+                    <span class="result-label">Resultado Final</span>
+                    <span id="final-grade" class="result-value">--</span>
+                </div>
+                
+                <div class="result-score">
+                    <div class="score-circle">
+                        <span id="score-value">0</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <span class="score-label">Puntuación</span>
+                </div>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h4>Distancia</h4>
+                    <p class="metric-avg">Promedio: <span id="metric-dist-avg">--</span> cm</p>
+                    <p class="metric-range">Rango: <span id="metric-dist-range">--</span> cm</p>
+                    <span id="metric-dist-status" class="metric-status"></span>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>Ángulo</h4>
+                    <p class="metric-avg">Promedio: <span id="metric-angle-avg">--</span>°</p>
+                    <p class="metric-range">Rango: <span id="metric-angle-range">--</span>°</p>
+                    <span id="metric-angle-status" class="metric-status"></span>
+                </div>
+                
+                <div class="metric-card">
+                    <h4>Velocidad</h4>
+                    <p class="metric-avg">Promedio: <span id="metric-vel-avg">--</span> cm/s</p>
+                    <p class="metric-range">Constancia: <span id="metric-vel-const">--</span>%</p>
+                    <span id="metric-vel-status" class="metric-status"></span>
+                </div>
+            </div>
+            
+            <div class="time-info">
+                <p>Tiempo total de evaluación: <span id="total-time">--</span> segundos</p>
+            </div>
+            
+            <div class="result-actions">
+                <!-- Botones para evaluación completa -->
+                <div id="full-eval-actions" class="action-group">
+                    <button id="save-btn" class="btn-primary">💾 Guardar a Google Forms</button>
+                    <button id="share-btn" class="btn-secondary">📤 Compartir Resultados</button>
+                    <button id="new-eval-btn" class="btn-outline">Nueva Evaluación</button>
+                </div>
+                
+                <!-- Botones para prueba rápida -->
+                <div id="quick-test-actions" class="action-group hidden">
+                    <button id="quick-restart-btn" class="btn-primary">🔄 Repetir Prueba</button>
+                    <button id="quick-new-btn" class="btn-secondary">Nueva Prueba</button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Loader -->
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+            <p id="loader-text">Procesando...</p>
+        </div>
+        
+        <!-- Toast notifications -->
+        <div id="toast-container"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
