@@ -31,7 +31,7 @@ const CONFIG = {
     // - Si la velocidad medida es muy BAJA, aumentar este valor (ej: 2, 3, 5...)
     // - Si la velocidad medida es muy ALTA, disminuir este valor (ej: 0.5, 0.3...)
     // Rango recomendado: 0.5 a 5.0
-    velocityCalibration: 1.0,
+    velocityCalibration: 0.5,
     
     // Configuración de sensores
     sensors: {
